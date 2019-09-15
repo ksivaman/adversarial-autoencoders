@@ -13,7 +13,7 @@ import os
 def to_img(x):
     x = 0.5 * (x + 1)
     x = x.clamp(0, 1)
-    x = x.view(x.size(0), 1, 28, 28)
+    x = x.view(x.size(0), 3, 28, 28)
     return x
 
 num_epochs = 100
@@ -21,8 +21,10 @@ batch_size = 128
 learning_rate = 1e-3
 
 img_transform = transforms.Compose([
+    # transforms.Grayscale(num_output_channels=1),
     transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transforms.Normalize((0.5,), (0.5,))
 ])
 
 dataset = MNIST('./data', download=True, transform=img_transform)
@@ -53,14 +55,16 @@ class autoencoder(nn.Module):
         x = self.decoder(x)
         return x
 
-model = autoencoder().cuda()
+device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+
+model = autoencoder().to(device)
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
 
 for epoch in range(num_epochs):
     for data in dataloader:
         img, _ = data
-        img = Variable(img).cuda()
+        img = Variable(img).to(device)
         # ===================forward=====================
         output = model(img)
         loss = criterion(output, img)
@@ -70,6 +74,6 @@ for epoch in range(num_epochs):
         optimizer.step()
     # ===================log========================
 
-    print('epoch [{}/{}], loss:{:.4f}'.format(epoch+1, num_epochs, loss.data[0]))
+    print('epoch [{}/{}], loss:{:.4f}'.format(epoch+1, num_epochs, loss.item()))
 
 torch.save(model.state_dict(), './models/conv_autoencoder.pth')
