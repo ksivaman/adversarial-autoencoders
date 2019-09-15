@@ -51,7 +51,7 @@ def test(args, model, device, test_loader):
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
-    test_accuracy = correct / len(test_loader)
+    test_accuracy = correct / (10 * len(test_loader))
 
     test_loss /= len(test_loader.dataset)
     print('Test accuracy: {}'.format(test_accuracy))
@@ -63,7 +63,7 @@ parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N', he
 parser.add_argument('--epochs', type=int, default=10, metavar='N', help='number of epochs to train (default: 10)')
 parser.add_argument('--lr', type=float, default=0.01, metavar='LR', help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.5, metavar='M', help='SGD momentum (default: 0.5)')
-parser.add_argument('--save-model', action='store_true', default=False, help='For Saving the current Model')
+parser.add_argument('--save-model', action='store_true', default=True, help='For Saving the current Model')
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
@@ -93,4 +93,4 @@ for epoch in range(1, args.epochs + 1):
     test(args, model, device, test_loader)
 
 if (args.save_model):
-    torch.save(model.state_dict(),"mnist_cnn.pt")
+    torch.save(model.state_dict(), "models/mnist_cnn.pt")
