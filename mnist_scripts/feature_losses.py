@@ -20,8 +20,8 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 my_vgg = vgg16(pretrained=True)
 my_vgg.to(device)
 
-def get_features_L3(input_image):
-    return my_vgg.features[:-3](input_image)
+def get_feature_maps(input_image, layer_from_back=3):
+    return my_vgg.features[:-layer_from_back](input_image)
 
 model = Digits()
 model.load_state_dict(torch.load('models/mnist_cnn.pt'))
@@ -50,8 +50,11 @@ model.eval()
 test_loss = 0
 correct = 0
 
+# print(my_vgg.features)
 with torch.no_grad():
     for data, target in test_loader:
         data, target = data.to(device), target.to(device)
-        output = get_features_L3(data)
-
+        output = get_feature_maps(data, 3)
+        output2 = get_feature_maps(data, 7)
+        output3 = get_feature_maps(data, 10)
+        print(output.shape, output2.shape, output3.shape)
