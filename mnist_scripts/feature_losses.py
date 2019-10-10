@@ -50,7 +50,6 @@ model.eval()
 test_loss = 0
 correct = 0
 
-# print(my_vgg.features)
 with torch.no_grad():
     for data, target in test_loader:
         data, target = data.to(device), target.to(device)
