@@ -21,7 +21,12 @@ batch_size = 128
 learning_rate = 1e-3
 
 img_transform = transforms.Compose([
+    # transforms.Grayscale(num_output_channels=1),
     transforms.ToTensor(),
+<<<<<<< HEAD
+=======
+    # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+>>>>>>> cb2e8de24e10b92a63bcbb834e67cc9a39344f65
     transforms.Normalize((0.5,), (0.5,))
 ])
 
@@ -50,6 +55,7 @@ class Autoencoder(nn.Module):
         x = self.decoder(x)
         return x
 
+<<<<<<< HEAD
 def main():
     device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -76,6 +82,28 @@ def main():
         print('epoch [{}/{}], loss:{:.4f}'.format(epoch+1, num_epochs, loss.item()))
 
     torch.save(model.state_dict(), './models/conv_autoencoder.pth')
+=======
+device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+
+model = autoencoder().to(device)
+criterion = nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
+
+for epoch in range(num_epochs):
+    for data in dataloader:
+        img, _ = data
+        img = Variable(img).to(device)
+        # ===================forward=====================
+        output = model(img)
+        loss = criterion(output, img)
+        # ===================backward====================
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    # ===================log========================
+
+    print('epoch [{}/{}], loss:{:.4f}'.format(epoch+1, num_epochs, loss.item()))
+>>>>>>> cb2e8de24e10b92a63bcbb834e67cc9a39344f65
 
 if __name__ == '__main__':
     main()
