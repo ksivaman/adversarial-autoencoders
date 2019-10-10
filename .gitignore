@@ -104,5 +104,5 @@ venv.bak/
 .mypy_cache/
 
 #data models
-./mnist_scripts/models/
-./mnist_scripts/data/
+./mnist_scripts/models
+./mnist_scripts/data

@@ -13,7 +13,7 @@ import os
 def to_img(x):
     x = 0.5 * (x + 1)
     x = x.clamp(0, 1)
-    x = x.view(x.size(0), 1, 28, 28)
+    x = x.view(x.size(0), 3, 28, 28)
     return x
 
 num_epochs = 100
@@ -22,15 +22,12 @@ learning_rate = 1e-3
 
 img_transform = transforms.Compose([
     transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transforms.Normalize((0.5,), (0.5,))
 ])
 
-dataset = MNIST('./data', download=True, transform=img_transform)
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-class autoencoder(nn.Module):
+class Autoencoder(nn.Module):
     def __init__(self):
-        super(autoencoder, self).__init__()
+        super(Autoencoder, self).__init__()
         self.encoder = nn.Sequential(
             nn.Conv2d(1, 16, 3, stride=3, padding=1),  # b, 16, 10, 10
             nn.ReLU(True),
@@ -53,23 +50,32 @@ class autoencoder(nn.Module):
         x = self.decoder(x)
         return x
 
-model = autoencoder().cuda()
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
+def main():
+    device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
-for epoch in range(num_epochs):
-    for data in dataloader:
-        img, _ = data
-        img = Variable(img).cuda()
-        # ===================forward=====================
-        output = model(img)
-        loss = criterion(output, img)
-        # ===================backward====================
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    # ===================log========================
+    dataset = MNIST('./data', download=True, transform=img_transform)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    print('epoch [{}/{}], loss:{:.4f}'.format(epoch+1, num_epochs, loss.data[0]))
+    model = Autoencoder().to(device)
+    criterion = nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
 
-torch.save(model.state_dict(), './models/conv_autoencoder.pth')
+    for epoch in range(num_epochs):
+        for data in dataloader:
+            img, _ = data
+            img = Variable(img).to(device)
+            # ===================forward=====================
+            output = model(img)
+            loss = criterion(output, img)
+            # ===================backward====================
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        # ===================log========================
+
+        print('epoch [{}/{}], loss:{:.4f}'.format(epoch+1, num_epochs, loss.item()))
+
+    torch.save(model.state_dict(), './models/conv_autoencoder.pth')
+
+if __name__ == '__main__':
+    main()
