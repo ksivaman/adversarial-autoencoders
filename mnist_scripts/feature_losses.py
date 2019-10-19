@@ -56,4 +56,3 @@ with torch.no_grad():
         output = get_feature_maps(data, 3)
         output2 = get_feature_maps(data, 7)
         output3 = get_feature_maps(data, 10)
-        print(output.shape, output2.shape, output3.shape)
